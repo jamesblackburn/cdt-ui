@@ -18,6 +18,7 @@ import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
+import org.eclipse.cdt.core.dom.ast.ASTVisitor;
 import org.eclipse.cdt.core.dom.ast.DOMException;
 import org.eclipse.cdt.core.dom.ast.IASTArrayDeclarator;
 import org.eclipse.cdt.core.dom.ast.IASTArrayModifier;
@@ -35,7 +36,6 @@ import org.eclipse.cdt.core.dom.ast.IASTTranslationUnit;
 import org.eclipse.cdt.core.dom.ast.IBinding;
 import org.eclipse.cdt.core.dom.ast.INodeFactory;
 import org.eclipse.cdt.core.dom.ast.IVariable;
-import org.eclipse.cdt.core.dom.ast.cpp.CPPASTVisitor;
 import org.eclipse.cdt.core.dom.ast.cpp.ICPPASTReferenceOperator;
 import org.eclipse.cdt.core.dom.ast.cpp.ICPPASTSimpleTypeTemplateParameter;
 import org.eclipse.cdt.core.dom.ast.cpp.ICPPBinding;
@@ -47,15 +47,12 @@ import org.eclipse.cdt.internal.core.dom.parser.cpp.CPPASTName;
 import org.eclipse.cdt.internal.core.dom.rewrite.astwriter.ASTWriter;
 
 public class NodeContainer {
-	
-	public final NameInformation NULL_NAME_INFORMATION = new NameInformation(
-			new CPPASTName());
+	public final NameInformation NULL_NAME_INFORMATION = new NameInformation(new CPPASTName());
 
 	private final ArrayList<IASTNode> vec;
 	private final ArrayList<NameInformation> names;
 
 	public class NameInformation {
-
 		private IASTName name;
 		private IASTName declaration;
 		private final ArrayList<IASTName> references;
@@ -188,12 +185,10 @@ public class NodeContainer {
 			}
 			IASTDeclarator sourceDeclarator = (IASTDeclarator) node;
 			if (sourceDeclarator.getParent() instanceof IASTSimpleDeclaration) {
-				IASTSimpleDeclaration decl = (IASTSimpleDeclaration) sourceDeclarator
-						.getParent();
+				IASTSimpleDeclaration decl = (IASTSimpleDeclaration) sourceDeclarator.getParent();
 				declSpec = decl.getDeclSpecifier();
 			} else if (sourceDeclarator.getParent() instanceof IASTParameterDeclaration) {
-				IASTParameterDeclaration decl = (IASTParameterDeclaration) sourceDeclarator
-						.getParent();
+				IASTParameterDeclaration decl = (IASTParameterDeclaration) sourceDeclarator.getParent();
 				declSpec = decl.getDeclSpecifier();
 			}
 
@@ -202,7 +197,7 @@ public class NodeContainer {
 		}
 
 		public boolean isDeclarationInScope() {
-			if(declaration != null && declaration.toCharArray().length > 0) {
+			if (declaration != null && declaration.toCharArray().length > 0) {
 				int declOffset = declaration.getFileLocation().getNodeOffset();
 				return declOffset >= getStartOffset()
 				&& declOffset <= getEndOffset();
@@ -212,8 +207,7 @@ public class NodeContainer {
 
 		@Override
 		public String toString() {
-			return Messages.NodeContainer_Name + name + ' '
-					+ isDeclarationInScope();
+			return Messages.NodeContainer_Name + name + ' ' + isDeclarationInScope();
 		}
 
 		public boolean isReference() {
@@ -290,7 +284,7 @@ public class NodeContainer {
 
 	public void findAllNames() {
 		for (IASTNode node : vec) {
-			node.accept(new CPPASTVisitor() {
+			node.accept(new ASTVisitor() {
 				{
 					shouldVisitNames = true;
 				}
@@ -304,11 +298,9 @@ public class NodeContainer {
 						ICPPBinding cppBind = (ICPPBinding) bind;
 						try {
 							if (!cppBind.isGloballyQualified()) {
-								NameInformation nameInformation = new NameInformation(
-										name);
+								NameInformation nameInformation = new NameInformation(name);
 
-								IASTName[] refs = name.getTranslationUnit()
-										.getReferences(bind);
+								IASTName[] refs = name.getTranslationUnit().getReferences(bind);
 								for (IASTName ref : refs) {
 									nameInformation.addReference(ref);
 								}
@@ -321,12 +313,11 @@ public class NodeContainer {
 											.getMessage(), e);
 							logger.log(status);
 						}
-					}else if(bind instanceof IVariable) {
+					} else if (bind instanceof IVariable) {
 						NameInformation nameInformation = new NameInformation(
 								name);
 
-						IASTName[] refs = name.getTranslationUnit()
-								.getReferences(bind);
+						IASTName[] refs = name.getTranslationUnit().getReferences(bind);
 						for (IASTName ref : refs) {
 							nameInformation.addReference(ref);
 						}
@@ -362,7 +353,6 @@ public class NodeContainer {
 
 		for (NameInformation nameInf : names) {
 			if (!declarations.contains(nameInf.getDeclaration())) {
-
 				declarations.add(nameInf.getDeclaration());
 				if (nameInf.isUsedAfterReferences()) {
 					usedAfter.add(nameInf);
@@ -382,8 +372,7 @@ public class NodeContainer {
 			if (!declarations.contains(nameInf.getDeclaration())) {
 
 				declarations.add(nameInf.getDeclaration());
-				if (nameInf.isUserSetIsReference()
-						|| nameInf.isUserSetIsReturnValue()) {
+				if (nameInf.isUserSetIsReference() || nameInf.isUserSetIsReturnValue()) {
 					usedAfter.add(nameInf);
 				}
 			}
@@ -469,10 +458,10 @@ public class NodeContainer {
 					if (location instanceof IASTMacroExpansionLocation) {
 						IASTMacroExpansionLocation macroLoc = (IASTMacroExpansionLocation) location;
 						nodeOffset = macroLoc.asFileLocation().getNodeOffset();
-					}else {
+					} else {
 						nodeOffset = node.getFileLocation().getNodeOffset();
 					}
-					if(nodeOffset <  nodeStart) {
+					if (nodeOffset <  nodeStart) {
 						nodeStart = nodeOffset;
 					}
 				}
@@ -509,11 +498,11 @@ public class NodeContainer {
 					IASTMacroExpansionLocation macroLoc = (IASTMacroExpansionLocation) location;
 					nodeOffset = macroLoc.asFileLocation().getNodeOffset();
 					nodeLength = macroLoc.asFileLocation().getNodeLength();
-				}else {
+				} else {
 					nodeOffset = location.getNodeOffset();
 					nodeLength = location.getNodeLength();
 				}
-				if(fileOffset < nodeOffset) {
+				if (fileOffset < nodeOffset) {
 					fileOffset = nodeOffset;
 					length = nodeLength;
 				}
