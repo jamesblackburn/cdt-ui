@@ -185,10 +185,12 @@ public class NodeContainer {
 			}
 			IASTDeclarator sourceDeclarator = (IASTDeclarator) node;
 			if (sourceDeclarator.getParent() instanceof IASTSimpleDeclaration) {
-				IASTSimpleDeclaration decl = (IASTSimpleDeclaration) sourceDeclarator.getParent();
+				IASTSimpleDeclaration decl = (IASTSimpleDeclaration) sourceDeclarator
+						.getParent();
 				declSpec = decl.getDeclSpecifier();
 			} else if (sourceDeclarator.getParent() instanceof IASTParameterDeclaration) {
-				IASTParameterDeclaration decl = (IASTParameterDeclaration) sourceDeclarator.getParent();
+				IASTParameterDeclaration decl = (IASTParameterDeclaration) sourceDeclarator
+						.getParent();
 				declSpec = decl.getDeclSpecifier();
 			}
 
@@ -353,6 +355,7 @@ public class NodeContainer {
 
 		for (NameInformation nameInf : names) {
 			if (!declarations.contains(nameInf.getDeclaration())) {
+
 				declarations.add(nameInf.getDeclaration());
 				if (nameInf.isUsedAfterReferences()) {
 					usedAfter.add(nameInf);
@@ -372,7 +375,8 @@ public class NodeContainer {
 			if (!declarations.contains(nameInf.getDeclaration())) {
 
 				declarations.add(nameInf.getDeclaration());
-				if (nameInf.isUserSetIsReference() || nameInf.isUserSetIsReturnValue()) {
+				if (nameInf.isUserSetIsReference()
+						|| nameInf.isUserSetIsReturnValue()) {
 					usedAfter.add(nameInf);
 				}
 			}
